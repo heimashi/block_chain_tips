@@ -153,7 +153,13 @@ HashChainCli$ bc
 
 ### 哈希二叉树 Merkle tree
 
-Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的一棵树.在p2p网络下载网络之前，先从可信的源获得文件的Merkle Tree树根。一旦获得了树根，就可以从其他从不可信的源获取 Merkle tree。Merkle Tree和Hash List的主要区别是，可以直接下载并立即验证Merkle Tree的一个分支。因为可以将文件切分成小的数据块，这样如果有一块数据损坏，仅仅重新下载这个数据块就行了。
+Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的一棵树.
+
+- 先由所有数据生成最底层的节点的Hash
+- 底层底节点再两两组合生成父节点，父节点的值是两个孩子节点的值相加的Hash值
+- 逐层生成树后直到达到根节点Merkle Root
+
+在p2p网络下载网络之前，先从可信的源获得文件的Merkle Tree树根。一旦获得了树根，就可以从其他从不可信的源获取 Merkle tree。Merkle Tree和Hash List的主要区别是，可以直接下载并立即验证Merkle Tree的一个分支。因为可以将文件切分成小的数据块，这样如果有一块数据损坏，仅仅重新下载这个数据块就行了。
 ![img_hash_merkle_tree](imgs/img_hash_merkle_tree.png)
 
 - 默克尔树（又叫哈希树） 应用于文件系统和p2p网络中 
@@ -163,6 +169,84 @@ Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的�
     * 快速定位修改。
     * 隐私友好的所在性证明 
 
+- 1.定义树节点对数据结构，包含三个参数：data：区块中记录的Hash值 leftChildHash：左子节点的Hash值 rightChildHash：右子节点的Hash值
+```JavaScript
+/*
+* 定义树节点，包含三个参数：
+* data：区块中记录的Hash值
+* leftChildHash：左子节点的Hash值
+* rightChildHash：右子节点的Hash值
+*/
+class TreeNode {
+    constructor(data, leftChildHash, rightChildHash) {
+        this.data = data;
+        this.leftChildHash = leftChildHash.toString();
+        this.rightChildHash = rightChildHash.toString();
+    }
+}
+```
+- 2.由数组来生成简单的Merkle树
+```JavaScript
+/*
+* 根据传人对数组，为数组生成一棵Merkle Tree
+*/
+var buildMerkleTree = (dataArr) => {
+    var merkleTree = [];
+    var index = 0;
+    var tmpList = [];
+    for(var data in dataArr){
+        var dataHash = CryptoJS.SHA256(data).toString();
+        var node = new TreeNode(dataHash, "", "");
+        tmpList.push(node);
+    }
+    merkleTree.push(tmpList);
+
+    while(merkleTree[index].length>1){
+        index++;
+        var size = 0;
+        var tmpNodeList = [];
+        var maxSize = merkleTree[index-1].length;
+        while(size<maxSize){
+            var leftNode = merkleTree[index-1][size++];
+            if(size<maxSize){
+                var rightNode = merkleTree[index-1][size++];
+                var dataHash = CryptoJS.SHA256(leftNode.data+rightNode.data).toString();
+                var newNode = new TreeNode(dataHash, leftNode.data, rightNode.data);
+                tmpNodeList.push(newNode);
+            }else{
+                var newNode = new TreeNode(leftNode.data, leftNode.data, "");
+                tmpNodeList.push(newNode);
+            }
+
+        }
+
+        merkleTree.push(tmpNodeList);
+        
+    }
+    
+    console.log(merkleTree);
+}
+```
+
+测试上面的步骤如下：
+- 1、进入项目的code/tip1目录，执行npm install后，再执行npm MerkleTree.js，进入测试的命令行环境
+- 2、运行help查看帮助，主要提供了两个工具命令行，执行buildTree dataArr命令可以生成树结构，buildTree aa bb
+
+```SHELL
+MerkleCli$ buildTree aa bb
+[ [ TreeNode {
+      data: '5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9',
+      leftChildHash: '',
+      rightChildHash: '' },
+    TreeNode {
+      data: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b',
+      leftChildHash: '',
+      rightChildHash: '' } ],
+  [ TreeNode {
+      data: 'fa13bb36c022a6943f37c638126a2c88fc8d008eb5a9fe8fcde17026807feae4',
+      leftChildHash: '5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9',
+      rightChildHash: '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b' } ] ]
+```
 
 ## Tip 2 - 区块链主要技术 - 数字签名和非对称加密
 
