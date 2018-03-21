@@ -169,6 +169,7 @@ Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的�
     * 快速定位修改。
     * 隐私友好的所在性证明 
 
+详细代码见[MerkleTree.js](https://github.com/heimashi/block_chain_tips/blob/master/code/tip1/MerkleTree.js)
 - 1.定义树节点对数据结构，包含三个参数：data：区块中记录的Hash值 leftChildHash：左子节点的Hash值 rightChildHash：右子节点的Hash值
 ```JavaScript
 /*
@@ -249,6 +250,67 @@ MerkleCli$ buildTree aa bb
 ```
 
 ## Tip 2 - 区块链主要技术 - 数字签名和非对称加密
+
+### 非对称加密
+
+加密算法一般分为对称加密和非对称加密
+
+非对称加密的例子如下（以RSA算法为例），详细代码见[index.js](https://github.com/heimashi/block_chain_tips/blob/master/code/tip2/index.js)：
+- 1、通过RSA算法产生一对公钥私钥
+```JavaScript
+var NodeRSA = require('node-rsa');
+
+//产生512位的RSA key
+var key = new NodeRSA({b: 512});
+
+//打印出公钥
+var publicDer = key.exportKey('public');
+console.log("public key:", publicDer);
+
+//打印出私钥
+var privateDer = key.exportKey('private');
+console.log("private key:", privateDer);
+```
+- 2、通过RSA算法和上一步生成的一对key来加密和解密
+```JavaScript
+//用RSA加密解密data参数
+var testRSA = (data) => {
+    var encrypted = key.encrypt(data, 'base64');
+    console.log('encrypted: ', encrypted);
+    var decrypted = key.decrypt(encrypted, 'utf8');
+    console.log('decrypted: ', decrypted);
+}
+```
+- 3、测试上面的代码，进入code/tip2/目录，执行npm install, npm start后进入控制台，再执行TestRSA data里测试加密解密的过程
+```SHELL
+public key: -----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKTRtMTmmcVRjicwtTymoJYo388qK2dt
+YTKcMOUgrZ/BImwA5pGSz/iJJvmaQDI58Jj0lwU3TzLiv/1JyPWcxX8CAwEAAQ==
+-----END PUBLIC KEY-----
+private key: -----BEGIN RSA PRIVATE KEY-----
+MIIBOQIBAAJBAKTRtMTmmcVRjicwtTymoJYo388qK2dtYTKcMOUgrZ/BImwA5pGS
+z/iJJvmaQDI58Jj0lwU3TzLiv/1JyPWcxX8CAwEAAQJAIrSlw/Bq4MnTjR0MjMDp
+f7ULq6vNh/HYTbfl89l1tfW2hO8HdjSirytzt2SDYuaiUKawsmtYYvyfy5QrgrWY
+QQIhANqe+VWocev2S5AoKmlr1QXHYeUkgFMvK1USawNBP+gDAiEAwP/UbtQgk8yN
+YL7hw1g9WDT8e7BobPt2EUbO6OXC6dUCIDziwXYFr5STx3+icA1kJrOxT6ZNgB+q
+p1rOAlepuG6ZAiAjp19MNh3qj/BSPhEg8E0s3WUDSJyR/YZbPLR+q+ttHQIgYP0M
+/ndhIXgmjLwXphFp5IBQ/x7NDQAn+72kde1GeZ4=
+-----END RSA PRIVATE KEY-----
+RSA_Cli$ help
+
+  Commands:
+
+    help [command...]  Provides help for a given command.
+    exit               Exits application.
+    TestRSA <data>     用RSA加密解密data参数
+
+RSA_Cli$ TestRSA aaaaaa
+encrypted:  I94KvnCB+hVYp+3Vb+MWswpjJgs/Kou/OdhdouogM7W0RTguwdbNc/2qscfYrcZER3KsgnIIOKyhoioYqwp9fw==
+decrypted:  aaaaaa
+```
+
+
+
 
 ## Tip 3 - 区块链主要技术 - P2P网络
 
