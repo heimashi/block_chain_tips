@@ -117,8 +117,8 @@ var isValidNewBlock = (newBlock, previousBlock) => {
 ```
 
 经过上面5个步骤就可以构建出一条哈希链表了，我将上面的步骤用vorpal库封装成了交互命令行，方便大家验证代码，测试的步骤如下：
-- 1、进入项目的code/tip1目录，执行npm install后，再执行npm start，进入测试的命令行
-- 2、运行help查看帮助，主要提供了两个工具命令行，执行bc命令可以查看当前的区块链的具体结构，执行add <data>可以添加新的区块到区块链中，另外执行exit可以退出命令行
+- 1、进入项目的code/tip1目录，执行npm install后，再执行npm start，进入测试的命令行环境
+- 2、运行help查看帮助，主要提供了两个工具命令行，执行bc命令可以查看当前的区块链的具体结构，执行add <data>可以添加新的区块到区块链中，另外执行exit可以退出命令行环境
 ```SHELL
 HashChainCli$ help
 
@@ -131,7 +131,24 @@ HashChainCli$ help
 ```
 - 3、例如连续执行add aaa 以及 add bbb后，再通过执行bc命令可以看到区块链中就有了3个区块：
 ```SHELL
-
+HashChainCli$ add aaa
+Add new block:
+Block {
+  previousHash: 'f1e3bb3792a062390c160101f0bca9ed156588bd1d126b066bf6abd7a1f99e06',
+  data: 'aaa' }
+HashChainCli$ add bbb
+Add new block:
+Block {
+  previousHash: '83e065b4902f908ec291b99d390580e7693734707f16749fad8289c871936073',
+  data: 'bbb' }
+HashChainCli$ bc
+[ Block { previousHash: '0', data: 'I\'m the genesis block' },
+  Block {
+    previousHash: 'f1e3bb3792a062390c160101f0bca9ed156588bd1d126b066bf6abd7a1f99e06',
+    data: 'aaa' },
+  Block {
+    previousHash: '83e065b4902f908ec291b99d390580e7693734707f16749fad8289c871936073',
+    data: 'bbb' } ]
 ```
 
 ### 哈希二叉树 Merkle trees 
