@@ -151,8 +151,9 @@ HashChainCli$ bc
     data: 'bbb' } ]
 ```
 
-### 哈希二叉树 Merkle trees 
+### 哈希二叉树 Merkle tree
 
+Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的一棵树.在p2p网络下载网络之前，先从可信的源获得文件的Merkle Tree树根。一旦获得了树根，就可以从其他从不可信的源获取 Merkle tree。Merkle Tree和Hash List的主要区别是，可以直接下载并立即验证Merkle Tree的一个分支。因为可以将文件切分成小的数据块，这样如果有一块数据损坏，仅仅重新下载这个数据块就行了。
 ![img_hash_merkle_tree](imgs/img_hash_merkle_tree.png)
 
 - 默克尔树（又叫哈希树） 应用于文件系统和p2p网络中 
