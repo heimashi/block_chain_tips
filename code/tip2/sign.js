@@ -25,14 +25,43 @@ var testRSASign = (data) => {
 	console.log('verify: ', verifyFlag);
 }
 
-//用RSA和key来对data参数签名校验
-var testRSASign2 = (data) => {
-	var hash = CryptoJS.SHA256(data).toString();
-	console.log('hash: ', hash);
-	var signature = key.encrypt(hash, 'base64');
-	console.log('signature: ', signature);
+//用RSA和key来对data参数签名
+var getSignature = (data) => {
+	//先通过摘要算法把要签名的data经过摘要得到其Hash值
+	var dataHash = CryptoJS.SHA256(data).toString();
 	
+	//把data的摘要用私钥进行加密，然后将签名和data内容一起发给收信人
+	var signature = key.encrypt(dataHash, 'base64');
+
+	return {content:data, sign: signature};
 }
 
-testRSASign("aaaaaaaaaa");
-testRSASign2("aaaaaaaaaa");
+//验证签名
+var verifySignature = (msg) => {
+	//收信人拿到签名后，用公钥解密签名拿到信的摘要
+	var decryptedDataHash = key.decrypt(msg.sign, 'utf8');
+	//计算data的摘要值
+	var dataHash = CryptoJS.SHA256(msg.content).toString();
+	return dataHash === decryptedDataHash;
+}
+
+//testRSASign("aaaaaaaaaa");
+
+
+
+//Node的一个命令行交互库
+const vorpal = require('vorpal')();
+
+//添加功能：对data进行数字签名并验证
+vorpal
+  .command('TestSign <data>', '对data进行数字签名并验证')
+  .action(function(args, callback) {
+    var signAndData = getSignature(args.data);
+	console.log(signAndData);
+	console.log("verify:", verifySignature(signAndData));
+    callback();
+  });
+
+vorpal
+  .delimiter('RSA_Cli$')
+  .show();

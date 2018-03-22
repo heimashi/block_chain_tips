@@ -44,6 +44,7 @@ ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
     * 应用：搜索谜题
     
 
+
 ### 哈希链表 或者称为区块链 Block Chain
 
 ![img_hash_chain](imgs/img_hash_chain.png)
@@ -97,7 +98,7 @@ var calculateHashForBlock = (block) => {
     return CryptoJS.SHA256(block.previousHash + block.data).toString();
 };
 ```
-- 5、将生成的区块添加到区块链中，添加过程中要坚持Hash指针是否一致
+- 5、将生成的区块添加到区块链中，添加过程中要验证Hash指针是否一致
 ```JavaScript
 //将生成的新区块加入区块链中
 var addBlock = (newBlock) => {
@@ -151,6 +152,8 @@ HashChainCli$ bc
     data: 'bbb' } ]
 ```
 
+
+
 ### 哈希二叉树 Merkle tree
 
 Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的一棵树.
@@ -167,7 +170,7 @@ Merkle tree通常也被称作Hash Tree，顾名思义，就是存储hash值的�
     * 隶属证明 非隶属证明  
     * 快速比较大量数据  
     * 快速定位修改。
-    * 隐私友好的所在性证明 
+    * 零知识证明 隐私友好的所在性证明 
 
 详细代码见[MerkleTree.js](https://github.com/heimashi/block_chain_tips/blob/master/code/tip1/MerkleTree.js)
 - 1.定义树节点对数据结构，包含三个参数：data：区块中记录的Hash值 leftChildHash：左子节点的Hash值 rightChildHash：右子节点的Hash值
@@ -253,7 +256,9 @@ MerkleCli$ buildTree aa bb
 
 ### 非对称加密
 
-加密算法一般分为对称加密和非对称加密
+- 加密分为两类
+    - 对称加密 密钥只有一个，加密和解密都用同一个key，例如AES DES加密算法
+    - 非对称加密 密钥成对出现，分为私钥和公钥，私钥加密后公钥能解密，公钥加密后只有私钥能解密。例如RSA ECC(椭圆曲线算法)
 
 非对称加密的例子如下（以RSA算法为例），详细代码见[index.js](https://github.com/heimashi/block_chain_tips/blob/master/code/tip2/index.js)：
 - 1、通过RSA算法产生一对公钥私钥
@@ -310,6 +315,51 @@ decrypted:  aaaaaa
 ```
 
 
+### 数字签名
+
+数字签名技术基于非对称加密算法，可用于身份认证确认来源以及数据的完整不可篡改，比特币用数字签名技术来保证交易的身份认证及完整不被篡改。
+
+数字签名流程：（以写信举例）
+- 1，A想写一封信给B，信的内容为X 
+- 2，A将信的内容X进行摘要得到Y 
+- 3，然后将摘要Y用自己的私钥加密得到Z，加密得到串就称为签名 
+- 4，之后将信X和签名Z一起发给B 
+- 5，B拥有A的公钥，拿到信和签名后，通过公钥解密出签名Z得到解密后的Y’，然后将信X进行摘要得到Y，然后比较Y和Y’是否相等
+
+用代码简单演示上面的过程，详细代码见[sign.js](https://github.com/heimashi/block_chain_tips/blob/master/code/tip2/sign.js)：
+- 1、获取data内容的签名，签名后将信的内容data和签名一起发给用户
+```JavaScript
+//用RSA和key来对data参数签名
+var getSignature = (data) => {
+    //先通过摘要算法把要签名的data经过摘要得到其Hash值
+    var dataHash = CryptoJS.SHA256(data).toString();
+    
+    //把data的摘要用私钥进行加密，然后将签名和data内容一起发给收信人
+    var signature = key.encrypt(dataHash, 'base64');
+
+    return {content:data, sign: signature};
+}
+```
+
+- 2、用户拿到内容data和签名后，再用公钥解密后对比data的哈希值是否一致
+```JavaScript
+//验证签名
+var verifySignature = (msg) => {
+    //收信人拿到签名后，用公钥解密签名拿到信的摘要
+    var decryptedDataHash = key.decrypt(msg.sign, 'utf8');
+    //计算data的摘要值
+    var dataHash = CryptoJS.SHA256(msg.content).toString();
+    return dataHash === decryptedDataHash;
+}
+```
+
+- 3、测试上面的代码，进入code/tip2/目录，执行npm install, node sign.js后进入控制台，再执行TestSign data里测试数字签名验证过程
+```SHELL
+RSA_Cli$ TestSign abdfdf
+{ content: 'abdfdf',
+  sign: 'uYDnPbbPjQ82ufHY9F6aAE/nwgZqKykVkArGlUGijn4ptHDRjFIibRhiwJPOfSt0zv9AHOuS3gGo65FUkpQbU0SYhQik+bCKwief/f8Rsneyz8kD7cPLp0KgItO0YTsT/OTBJkLEXfCL8jxtzS+38PX+zoWH4u4u7rm7DhuL/OVY5vviUi5ZAUq/9JkJVJ41ocPbGB+XIweZ0Q3RGh9d3c0VXbyLhUbNyRkCcMxquAPtA2XGz+7CwJ4eL987YF0B' }
+verify: true
+```
 
 
 ## Tip 3 - 区块链主要技术 - P2P网络
