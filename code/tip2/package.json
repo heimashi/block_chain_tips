@@ -8,8 +8,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-rsa": "^0.4.2",
+    "base58": "^1.0.1",
     "crypto-js": "^3.1.6",
+    "node-rsa": "^0.4.2",
     "vorpal": "^1.12.0"
   }
 }

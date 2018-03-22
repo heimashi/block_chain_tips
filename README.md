@@ -361,6 +361,41 @@ RSA_Cli$ TestSign abdfdf
 verify: true
 ```
 
+### Base58编码
+
+对于一些二进制串不方便查看，通常会采用编码手段转化为可视的字符串，例如Base64、Base58编码等，在比特币地址中就利用了Base58编码来提高账户公钥的可视化
+- Base64编码 64个字符，2^6表示2^8，故会增加内存暂用
+    - 数字：0,1,2,3,4,5,6,7,8,9共10个
+    - 小写字母：a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z，
+    - 共26个大写字母：A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z，共26个
+    - 符号+以及斜杠/
+
+```SHELL
+echo -n aaafsfsf | base64
+YWFhZnNmc2Y=
+```
+
+- Base58编码 58个字符，跟Base64类似，去掉了一些容易看错的、易产生歧义的字符。
+    - 去掉了0(零),O(大写字母O)
+    - 去掉了I(大写的字母i)，l(小写的字母L)
+    - 去掉了影响双击选择的字符，/, +
+    - 结果字符集正好58个字符(包括9个数字，24个大写字母，25个小写字母)
+
+- 代码实例，详细代码见[baseEncode.js](https://github.com/heimashi/block_chain_tips/blob/master/code/tip2/baseEncode.js)：
+```JavaScript
+var Base58 = require('base58');
+Base58.encode('aaa');
+Base58.decode('ccc');
+```
+- 测试Base58，进入code/tip2/目录，执行npm install, node baseEncode.js后进入控制台
+```SHELL
+node baseEncode.js
+Base58_Cli$ encode 123456
+CGy
+Base58_Cli$ decode CGy
+123456
+```
+
 
 ## Tip 3 - 区块链主要技术 - P2P网络
 
